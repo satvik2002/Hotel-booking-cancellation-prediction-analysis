@@ -16,7 +16,7 @@ def login():
         if username == "admin" and password == "admin123":
             st.session_state.logged_in = True
             st.success("Login successful!")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid credentials")
 
@@ -24,7 +24,7 @@ def login():
 def logout():
     if st.button("Logout"):
         st.session_state.logged_in = False
-        st.experimental_rerun()
+        st.rerun()
 
 # Load and preprocess data
 @st.cache_data
