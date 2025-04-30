@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import plotly.express as px
 
 # Load Data
@@ -52,7 +50,7 @@ with col7:
 with col8:
     st.metric("Repeat Guest Rate (%)", f"{round((non_canceled['is_repeated_guest'].sum()/len(non_canceled))*100, 2)}%")
 with col9:
-    st.metric("Revenue", f"€{round(non_canceled['revenue'].sum(), 2):,}")
+    st.metric("Revenue", f"${round(non_canceled['revenue'].sum(), 2):,}")
 
 # KPI Set 4
 booking_change_rate = 100.0 * (non_canceled['booking_changes'] > 0).sum() / len(non_canceled)
@@ -72,49 +70,70 @@ st.header("📈 Visual Analysis")
 
 # Bookings & Cancellations by Hotel
 st.subheader("Bookings & Cancellations by Hotel")
-hotel_data = df.groupby('hotel')['is_canceled'].value_counts().unstack().fillna(0)
-hotel_data.columns = ['Confirmed', 'Canceled']
-hotel_data = hotel_data[['Canceled', 'Confirmed']]
-st.bar_chart(hotel_data)
+hotel_data = df.groupby(['hotel', 'is_canceled']).size().reset_index(name='count')
+hotel_data['Status'] = hotel_data['is_canceled'].map({0: 'Confirmed', 1: 'Canceled'})
+fig1 = px.bar(hotel_data, x='hotel', y='count', color='Status', barmode='group',
+              text='count', title='Bookings & Cancellations by Hotel')
+fig1.update_traces(textposition='outside')
+st.plotly_chart(fig1)
 
-# Monthly Bookings
+# Monthly Bookings and Cancellations
 st.subheader("Monthly Bookings and Cancellations")
 month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                'July', 'August', 'September', 'October', 'November', 'December']
-monthly_data = df.groupby(['month', 'is_canceled']).size().unstack().reindex(month_order)
-monthly_data.columns = ['Confirmed', 'Canceled']
-st.line_chart(monthly_data)
+monthly_data = df.groupby([df['arrival_date'].dt.month_name(), 'is_canceled']).size().reset_index(name='count')
+monthly_data.columns = ['month', 'is_canceled', 'count']
+monthly_data['Status'] = monthly_data['is_canceled'].map({0: 'Confirmed', 1: 'Canceled'})
+monthly_data['month'] = pd.Categorical(monthly_data['month'], categories=month_order, ordered=True)
+fig2 = px.bar(monthly_data.sort_values('month'), x='month', y='count', color='Status', barmode='group',
+              text='count', title='Monthly Bookings and Cancellations')
+fig2.update_traces(textposition='outside')
+st.plotly_chart(fig2)
 
 # ADR by Hotel Type
 st.subheader("ADR by Hotel Type")
-adr_by_hotel = non_canceled.groupby('hotel')['adr'].mean()
-st.bar_chart(adr_by_hotel)
+adr_by_hotel = non_canceled.groupby('hotel')['adr'].mean().reset_index()
+fig3 = px.bar(adr_by_hotel, x='hotel', y='adr', text='adr', title='ADR by Hotel Type')
+fig3.update_traces(textposition='outside')
+st.plotly_chart(fig3)
 
 # Stay Duration by Customer Type
 st.subheader("Avg. Stay Duration by Customer Type")
-stay_by_customer = non_canceled.groupby('customer_type')['stay_duration'].mean()
-st.line_chart(stay_by_customer)
+stay_by_customer = non_canceled.groupby('customer_type')['stay_duration'].mean().reset_index()
+fig4 = px.line(stay_by_customer, x='customer_type', y='stay_duration', text='stay_duration', markers=True,
+               title='Avg. Stay Duration by Customer Type')
+fig4.update_traces(textposition='top center')
+st.plotly_chart(fig4)
 
 # Repeat Guest % by Month
 st.subheader("Repeat Guest % by Month")
 repeat_by_month = non_canceled.groupby('month')['is_repeated_guest'].mean() * 100
-repeat_by_month = repeat_by_month.reindex(month_order)
-st.line_chart(repeat_by_month)
+repeat_by_month = repeat_by_month.reindex(month_order).reset_index()
+fig5 = px.line(repeat_by_month, x='month', y='is_repeated_guest', text='is_repeated_guest', markers=True,
+               title='Repeat Guest % by Month')
+fig5.update_traces(textposition='top center')
+st.plotly_chart(fig5)
 
 # Revenue by Market Segment
 st.subheader("Revenue by Market Segment")
-segment_revenue = non_canceled.groupby('market_segment')['revenue'].sum().sort_values(ascending=False)
-st.bar_chart(segment_revenue)
+segment_revenue = non_canceled.groupby('market_segment')['revenue'].sum().sort_values(ascending=False).reset_index()
+fig6 = px.bar(segment_revenue, x='market_segment', y='revenue', text='revenue', title='Revenue by Market Segment')
+fig6.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+st.plotly_chart(fig6)
 
 # Top Countries by Revenue
 st.subheader("Top 10 Countries by Revenue")
-country_revenue = non_canceled.groupby('country')['revenue'].sum().sort_values(ascending=False).head(10)
-fig = px.bar(country_revenue, title='Top 10 Countries by Revenue', labels={'value': 'Revenue', 'country': 'Country'})
-st.plotly_chart(fig)
+country_revenue = non_canceled.groupby('country')['revenue'].sum().sort_values(ascending=False).head(10).reset_index()
+fig7 = px.bar(country_revenue, x='country', y='revenue', text='revenue', title='Top 10 Countries by Revenue')
+fig7.update_traces(textposition='outside')
+st.plotly_chart(fig7)
 
 # Monthly Revenue Trend
 st.subheader("Monthly Revenue Trend")
-monthly_revenue = non_canceled.groupby('month')['revenue'].sum().reindex(month_order)
-st.line_chart(monthly_revenue)
+monthly_revenue = non_canceled.groupby(df['arrival_date'].dt.month_name())['revenue'].sum().reindex(month_order).reset_index()
+monthly_revenue.columns = ['month', 'revenue']
+fig8 = px.line(monthly_revenue, x='month', y='revenue', text='revenue', markers=True, title='Monthly Revenue Trend')
+fig8.update_traces(textposition='top center')
+st.plotly_chart(fig8)
 
 st.success("✅ Dashboard loaded successfully.")
