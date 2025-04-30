@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 
 # Authentication
-users = {"admin": "1234", "user": "pass"}
+users = {"admin": "admin123", "user": "pass"}
 
 def login():
     st.title("🔐 Hotel Dashboard Login")
@@ -14,7 +14,7 @@ def login():
         if users.get(username) == password:
             st.session_state.logged_in = True
             st.session_state.username = username
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid username or password")
 
