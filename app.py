@@ -10,7 +10,7 @@ st.title("🏨 Hotel Booking Analysis Dashboard")
 # Load dataset
 @st.cache_data
 def load_data():
-    return pd.read_csv("hoteldata.csv")
+    return pd.read_csv("HotelData - Final.csv")
 
 df = load_data()
 
