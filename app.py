@@ -64,7 +64,7 @@ hotel_data = df.groupby('hotel')['is_canceled'].value_counts().unstack().fillna(
 hotel_data.columns = ['Confirmed', 'Canceled']
 hotel_data = hotel_data[['Canceled', 'Confirmed']].reset_index()
 fig0 = px.bar(hotel_data, x='hotel', y=['Canceled', 'Confirmed'], barmode='group',
-              title='Bookings & Cancellations by Hotel', text_auto=True,
+              title='Bookings & Cancellations by Hotel', text_auto='.0f',
               labels={'value': 'Count', 'hotel': 'Hotel', 'variable': 'Status'})
 fig0.update_traces(textposition='outside')
 fig0.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
