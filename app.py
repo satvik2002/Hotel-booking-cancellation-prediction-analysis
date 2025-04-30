@@ -70,18 +70,44 @@ st.header("📈 Visual Analysis")
 
 # Bookings & Cancellations by Hotel
 st.subheader("Bookings & Cancellations by Hotel")
-hotel_data = df.groupby('hotel')['is_canceled'].value_counts().unstack().fillna(0)
-hotel_data.columns = ['Confirmed', 'Canceled']
-hotel_data = hotel_data[['Canceled', 'Confirmed']]
-st.bar_chart(hotel_data)
+hotel_data = df.groupby(['hotel', 'is_canceled']).size().reset_index(name='count')
+hotel_data['status'] = hotel_data['is_canceled'].map({0: 'Confirmed', 1: 'Canceled'})
 
-# Monthly Bookings
+fig_hotel = px.bar(
+    hotel_data,
+    x='hotel',
+    y='count',
+    color='status',
+    barmode='group',
+    text='count',
+    title="Bookings & Cancellations by Hotel",
+    labels={'hotel': 'Hotel', 'count': 'Number of Bookings', 'status': 'Status'}
+)
+fig_hotel.update_traces(textposition='outside')
+fig_hotel.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig_hotel)
+
+# Monthly Bookings and Cancellations
 st.subheader("Monthly Bookings and Cancellations")
 month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                'July', 'August', 'September', 'October', 'November', 'December']
-monthly_data = df.groupby(['month', 'is_canceled']).size().unstack().reindex(month_order)
-monthly_data.columns = ['Confirmed', 'Canceled']
-st.line_chart(monthly_data)
+df['month'] = pd.Categorical(df['month'], categories=month_order, ordered=True)
+monthly_data = df.groupby(['month', 'is_canceled']).size().reset_index(name='count')
+monthly_data['status'] = monthly_data['is_canceled'].map({0: 'Confirmed', 1: 'Canceled'})
+
+fig_month = px.bar(
+    monthly_data,
+    x='month',
+    y='count',
+    color='status',
+    barmode='group',
+    text='count',
+    title="Monthly Bookings and Cancellations",
+    labels={'month': 'Month', 'count': 'Number of Bookings', 'status': 'Status'}
+)
+fig_month.update_traces(textposition='outside')
+fig_month.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig_month)
 
 # ADR by Hotel Type
 st.subheader("ADR by Hotel Type")
