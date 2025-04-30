@@ -113,6 +113,7 @@ def main():
         monthly_data = monthly_data.reset_index().rename(columns={'month': 'Month'})
         figm = px.bar(monthly_data, x='Month', y=['Canceled', 'Confirmed'], barmode='group',
                       title='Monthly Bookings and Cancellations', text_auto=True)
+        figm.update_traces(textposition='outside')
         st.plotly_chart(figm)
 
         st.subheader("Cancellations by Weekday")
@@ -131,12 +132,14 @@ def main():
         st.subheader("ADR by Hotel Type")
         adr_by_hotel = non_canceled.groupby('hotel')['adr'].mean().round(2).reset_index()
         fig1 = px.bar(adr_by_hotel, x='hotel', y='adr', text='adr', title='ADR by Hotel Type')
+        fig1.update_traces(textposition='outside')
         st.plotly_chart(fig1)
 
         st.subheader("Avg. Stay Duration by Customer Type")
         stay_by_customer = non_canceled.groupby('customer_type')['stay_duration'].mean().round(2).reset_index()
         fig2 = px.bar(stay_by_customer, x='customer_type', y='stay_duration', text='stay_duration',
                       title='Avg. Stay Duration by Customer Type')
+        fig2.update_traces(textposition='outside')
         st.plotly_chart(fig2)
 
         st.subheader("Repeat Guest % by Month")
@@ -171,7 +174,6 @@ def main():
         monthly_revenue = monthly_revenue.round(2).reset_index()
         fig6 = px.line(monthly_revenue, x='month', y='revenue', text='revenue',
                        title='Monthly Revenue Trend (in Millions)')
-        fig6.update_traces(textposition='outside')
         st.plotly_chart(fig6)
 
     # Logout Button
