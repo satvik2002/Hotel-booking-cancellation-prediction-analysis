@@ -52,7 +52,7 @@ with col7:
 with col8:
     st.metric("Repeat Guest Rate (%)", f"{round((non_canceled['is_repeated_guest'].sum()/len(non_canceled))*100, 2)}%")
 with col9:
-    st.metric("Revenue", f"${round(non_canceled['revenue'].sum(), 2):,}")
+    st.metric("Revenue", f"€{round(non_canceled['revenue'].sum(), 2):,}")
 
 # KPI Set 4
 booking_change_rate = 100.0 * (non_canceled['booking_changes'] > 0).sum() / len(non_canceled)
