@@ -174,6 +174,7 @@ def main():
         monthly_revenue = monthly_revenue.round(2).reset_index()
         fig6 = px.line(monthly_revenue, x='month', y='revenue', text='revenue',
                        title='Monthly Revenue Trend (in Millions)')
+        fig6.update_traces(textposition='top center')
         st.plotly_chart(fig6)
 
     # Logout Button
