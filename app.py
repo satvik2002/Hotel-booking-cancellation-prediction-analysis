@@ -22,7 +22,7 @@ st.title("Hotel Booking Analysis Dashboard")
 st.markdown("This dashboard provides insights into hotel booking trends and performance KPIs.")
 
 # KPIs
-st.header("📊 Key Performance Indicators")
+st.header("\ud83d\udcca Key Performance Indicators")
 
 # KPI Set 1
 col1, col2, col3 = st.columns(3)
@@ -66,48 +66,30 @@ with col12:
     st.metric("Avg. Waiting Days", avg_waiting_days)
 
 # Visualizations
-st.header("📈 Visual Analysis")
+st.header("\ud83d\udcc8 Visual Analysis")
 
 # Bookings & Cancellations by Hotel
 st.subheader("Bookings & Cancellations by Hotel")
-hotel_data = df.groupby(['hotel', 'is_canceled']).size().reset_index(name='count')
-hotel_data['status'] = hotel_data['is_canceled'].map({0: 'Confirmed', 1: 'Canceled'})
-
-fig_hotel = px.bar(
-    hotel_data,
-    x='hotel',
-    y='count',
-    color='status',
-    barmode='group',
-    text='count',
-    title="Bookings & Cancellations by Hotel",
-    labels={'hotel': 'Hotel', 'count': 'Number of Bookings', 'status': 'Status'}
-)
-fig_hotel.update_traces(textposition='outside')
-fig_hotel.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig_hotel)
+hotel_data = df.groupby('hotel')['is_canceled'].value_counts().unstack().fillna(0)
+hotel_data.columns = ['Confirmed', 'Canceled']
+hotel_data = hotel_data[['Canceled', 'Confirmed']].reset_index()
+hotel_data_melted = hotel_data.melt(id_vars='hotel', var_name='Status', value_name='Count')
+fig_bc = px.bar(hotel_data_melted, x='hotel', y='Count', color='Status', barmode='group', text='Count', title='Bookings & Cancellations by Hotel')
+fig_bc.update_traces(textposition='outside')
+fig_bc.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig_bc)
 
 # Monthly Bookings and Cancellations
 st.subheader("Monthly Bookings and Cancellations")
 month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                'July', 'August', 'September', 'October', 'November', 'December']
-df['month'] = pd.Categorical(df['month'], categories=month_order, ordered=True)
-monthly_data = df.groupby(['month', 'is_canceled']).size().reset_index(name='count')
-monthly_data['status'] = monthly_data['is_canceled'].map({0: 'Confirmed', 1: 'Canceled'})
-
-fig_month = px.bar(
-    monthly_data,
-    x='month',
-    y='count',
-    color='status',
-    barmode='group',
-    text='count',
-    title="Monthly Bookings and Cancellations",
-    labels={'month': 'Month', 'count': 'Number of Bookings', 'status': 'Status'}
-)
-fig_month.update_traces(textposition='outside')
-fig_month.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig_month)
+monthly_data = df.groupby(['month', 'is_canceled']).size().unstack().reindex(month_order)
+monthly_data.columns = ['Confirmed', 'Canceled']
+monthly_data = monthly_data.reset_index().melt(id_vars='month', var_name='Status', value_name='Count')
+fig_mb = px.bar(monthly_data, x='month', y='Count', color='Status', barmode='group', text='Count', title='Monthly Bookings and Cancellations')
+fig_mb.update_traces(textposition='outside')
+fig_mb.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig_mb)
 
 # ADR by Hotel Type
 st.subheader("ADR by Hotel Type")
@@ -161,4 +143,25 @@ fig6.update_traces(texttemplate='%{text:.2f}M', textposition='top center')
 fig6.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 st.plotly_chart(fig6)
 
-st.success("✅ Dashboard loaded successfully.")
+# Cancellations by Weekday
+st.subheader("Cancellations by Weekday")
+df['weekday'] = df['arrival_date'].dt.day_name()
+cancel_by_weekday = df[df['is_canceled'] == 1].groupby('weekday').size()
+weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+cancel_by_weekday = cancel_by_weekday.reindex(weekday_order[::-1])
+weekday_data = cancel_by_weekday.reset_index()
+weekday_data.columns = ['Weekday', 'Cancellations']
+fig7 = px.bar(
+    weekday_data,
+    x='Cancellations',
+    y='Weekday',
+    orientation='h',
+    text='Cancellations',
+    title='Cancellations by Weekday',
+    labels={'Weekday': 'Week Name', 'Cancellations': 'Bookings Count'},
+)
+fig7.update_traces(textposition='outside')
+fig7.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', yaxis=dict(categoryorder='array', categoryarray=weekday_data['Weekday'][::-1]))
+st.plotly_chart(fig7)
+
+st.success("\u2705 Dashboard loaded successfully.")
