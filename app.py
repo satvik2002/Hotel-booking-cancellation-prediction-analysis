@@ -37,6 +37,10 @@ def main():
     month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                    'July', 'August', 'September', 'October', 'November', 'December']
 
+    # Page Navigation
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["KPIs", "Cancellation Analysis", "Behavior Analysis", "Revenue Analysis"])
+    
     # Sidebar Filters
     st.sidebar.header("🔍 Filters")
     selected_years = st.sidebar.multiselect("Select Year", sorted(df['year'].unique()), default=sorted(df['year'].unique()))
@@ -49,9 +53,6 @@ def main():
     df = df[df['market_segment'].isin(selected_segments)]
     non_canceled = df[df['is_canceled'] == 0]
 
-    # Page Navigation
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["KPIs", "Cancellation Analysis", "Behavior Analysis", "Revenue Analysis"])
 
     if page == "KPIs":
         st.title("Hotel Booking Analysis Dashboard")
@@ -121,6 +122,7 @@ def main():
         cancel_by_weekday.columns = ['Weekday', 'Count']
         fig7 = px.bar(cancel_by_weekday, x='Count', y='Weekday', orientation='h', text='Count',
                       title='Cancellations by Weekday')
+        fig7.update_traces(textposition='outside')        
         st.plotly_chart(fig7)
 
     elif page == "Behavior Analysis":
@@ -142,6 +144,7 @@ def main():
         repeat_by_month = repeat_by_month.reindex(month_order).round(2).reset_index()
         fig3 = px.bar(repeat_by_month, x='month', y='is_repeated_guest', text='is_repeated_guest',
                       title='Repeat Guest % by Month', labels={'is_repeated_guest': 'Repeat Guest %'})
+        fig3.update_traces(textposition='outside')
         st.plotly_chart(fig3)
 
     elif page == "Revenue Analysis":
@@ -152,6 +155,7 @@ def main():
         segment_revenue = segment_revenue.round(2).reset_index()
         fig4 = px.bar(segment_revenue, x='market_segment', y='revenue', text='revenue',
                       title='Revenue by Market Segment (in Millions)')
+        fig4.update_traces(textposition='outside')
         st.plotly_chart(fig4)
 
         st.subheader("Top 10 Countries by Revenue")
@@ -159,6 +163,7 @@ def main():
         country_revenue = country_revenue.round(2).reset_index()
         fig5 = px.bar(country_revenue, x='country', y='revenue', text='revenue',
                       title='Top 10 Countries by Revenue (in Millions)')
+        fig5.update_traces(textposition='outside')
         st.plotly_chart(fig5)
 
         st.subheader("Monthly Revenue Trend")
@@ -166,6 +171,7 @@ def main():
         monthly_revenue = monthly_revenue.round(2).reset_index()
         fig6 = px.line(monthly_revenue, x='month', y='revenue', text='revenue',
                        title='Monthly Revenue Trend (in Millions)')
+        fig6.update_traces(textposition='outside')
         st.plotly_chart(fig6)
 
     # Logout Button
