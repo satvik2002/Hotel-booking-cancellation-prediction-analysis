@@ -66,7 +66,7 @@ def main():
              ("Avg. ADR", round(non_canceled['adr'].mean(), 2))],
             [("Total Guests", int((non_canceled['adults'] + non_canceled['children'] + non_canceled['babies']).sum())),
              ("Repeat Guest Rate (%)", f"{round((non_canceled['is_repeated_guest'].sum()/len(non_canceled))*100, 2)}%"),
-             ("Revenue", f"${round(non_canceled['revenue'].sum(), 2):,}")],
+             ("Revenue", f"€{round(non_canceled['revenue'].sum(), 2):,}")],
             [("Booking Change Rate (%)", f"{round((non_canceled['booking_changes'] > 0).sum() / len(non_canceled) * 100, 2)}%"),
              ("Room Type Mismatch Rate (%)", f"{round((non_canceled['reserved_room_type'] != non_canceled['assigned_room_type']).sum() / len(non_canceled) * 100, 2)}%"),
              ("Avg. Waiting Days", round(non_canceled['days_in_waiting_list'].mean(), 2))]
@@ -80,13 +80,30 @@ def main():
 
     elif page == "Cancellation Analysis":
         st.header("📉 Cancellation Analysis")
-
         st.subheader("Bookings & Cancellations by Hotel")
+        
+        # Data preparation
         hotel_data = df.groupby('hotel')['is_canceled'].value_counts().unstack().fillna(0)
         hotel_data.columns = ['Confirmed', 'Canceled']
         hotel_data = hotel_data[['Canceled', 'Confirmed']].reset_index()
-        fig0 = px.bar(hotel_data, x='hotel', y=['Canceled', 'Confirmed'], barmode='group',
-                      title='Bookings & Cancellations by Hotel', text_auto='.0f')
+        
+        # Melt for plotting
+        hotel_data_melted = hotel_data.melt(id_vars='hotel', var_name='Status', value_name='Count')
+        
+        # Add formatted label with 'k'
+        hotel_data_melted['Label'] = (hotel_data_melted['Count'] / 1000).round(1).astype(str) + 'k'
+        
+        # Plotly bar chart
+        fig0 = px.bar(
+            hotel_data_melted,
+            x='hotel',
+            y='Count',
+            color='Status',
+            barmode='group',
+            text='Label',
+            title='Bookings & Cancellations by Hotel'
+        )
+        fig0.update_traces(textposition='outside')
         st.plotly_chart(fig0)
 
         st.subheader("Monthly Bookings and Cancellations")
