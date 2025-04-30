@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import matplotlib.pyplot as plt
 
 # Load Data
 @st.cache_data
@@ -22,7 +23,7 @@ st.title("Hotel Booking Analysis Dashboard")
 st.markdown("This dashboard provides insights into hotel booking trends and performance KPIs.")
 
 # KPIs
-st.header("\ud83d\udcca Key Performance Indicators")
+st.header("📊 Key Performance Indicators")
 
 # KPI Set 1
 col1, col2, col3 = st.columns(3)
@@ -66,82 +67,81 @@ with col12:
     st.metric("Avg. Waiting Days", avg_waiting_days)
 
 # Visualizations
-st.header("\ud83d\udcc8 Visual Analysis")
+st.header("📈 Visual Analysis")
 
 # Bookings & Cancellations by Hotel
 st.subheader("Bookings & Cancellations by Hotel")
 hotel_data = df.groupby('hotel')['is_canceled'].value_counts().unstack().fillna(0)
 hotel_data.columns = ['Confirmed', 'Canceled']
 hotel_data = hotel_data[['Canceled', 'Confirmed']].reset_index()
-hotel_data_melted = hotel_data.melt(id_vars='hotel', var_name='Status', value_name='Count')
-fig_bc = px.bar(hotel_data_melted, x='hotel', y='Count', color='Status', barmode='group', text='Count', title='Bookings & Cancellations by Hotel')
-fig_bc.update_traces(textposition='outside')
-fig_bc.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig_bc)
+fig0 = px.bar(hotel_data, x='hotel', y=['Canceled', 'Confirmed'], barmode='group', title='Bookings & Cancellations by Hotel')
+fig0.update_traces(texttemplate='%{y}', textposition='outside')
+fig0.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig0)
 
-# Monthly Bookings and Cancellations
+# Monthly Bookings
 st.subheader("Monthly Bookings and Cancellations")
 month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                'July', 'August', 'September', 'October', 'November', 'December']
 monthly_data = df.groupby(['month', 'is_canceled']).size().unstack().reindex(month_order)
 monthly_data.columns = ['Confirmed', 'Canceled']
-monthly_data = monthly_data.reset_index().melt(id_vars='month', var_name='Status', value_name='Count')
-fig_mb = px.bar(monthly_data, x='month', y='Count', color='Status', barmode='group', text='Count', title='Monthly Bookings and Cancellations')
-fig_mb.update_traces(textposition='outside')
-fig_mb.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig_mb)
+monthly_data = monthly_data.reset_index().melt(id_vars='month', var_name='status', value_name='count')
+fig1 = px.bar(monthly_data, x='month', y='count', color='status', barmode='group', title='Monthly Bookings and Cancellations', text='count')
+fig1.update_traces(texttemplate='%{text}', textposition='outside')
+fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig1)
 
 # ADR by Hotel Type
 st.subheader("ADR by Hotel Type")
 adr_by_hotel = non_canceled.groupby('hotel')['adr'].mean().round(2).reset_index()
-fig1 = px.bar(adr_by_hotel, x='hotel', y='adr', text='adr', title='ADR by Hotel Type', labels={'adr': 'ADR', 'hotel': 'Hotel'})
-fig1.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-fig1.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig1)
+fig2 = px.bar(adr_by_hotel, x='hotel', y='adr', text='adr', title='ADR by Hotel Type', labels={'adr': 'ADR', 'hotel': 'Hotel'})
+fig2.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+fig2.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig2)
 
 # Stay Duration by Customer Type
 st.subheader("Avg. Stay Duration by Customer Type")
 stay_by_customer = non_canceled.groupby('customer_type')['stay_duration'].mean().round(2).reset_index()
-fig2 = px.bar(stay_by_customer, x='customer_type', y='stay_duration', text='stay_duration', title='Avg. Stay Duration by Customer Type', labels={'stay_duration': 'Avg. Stay Duration', 'customer_type': 'Customer Type'})
-fig2.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-fig2.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig2)
+fig3 = px.bar(stay_by_customer, x='customer_type', y='stay_duration', text='stay_duration', title='Avg. Stay Duration by Customer Type', labels={'stay_duration': 'Avg. Stay Duration', 'customer_type': 'Customer Type'})
+fig3.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+fig3.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig3)
 
 # Repeat Guest % by Month
 st.subheader("Repeat Guest % by Month")
 repeat_by_month = non_canceled.groupby('month')['is_repeated_guest'].mean() * 100
 repeat_by_month = repeat_by_month.reindex(month_order).round(2).reset_index()
-fig3 = px.bar(repeat_by_month, x='month', y='is_repeated_guest', text='is_repeated_guest', title='Repeat Guest % by Month', labels={'is_repeated_guest': 'Repeat Guest %', 'month': 'Month'})
-fig3.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
-fig3.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig3)
+fig4 = px.bar(repeat_by_month, x='month', y='is_repeated_guest', text='is_repeated_guest', title='Repeat Guest % by Month', labels={'is_repeated_guest': 'Repeat Guest %', 'month': 'Month'})
+fig4.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
+fig4.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig4)
 
 # Revenue by Market Segment
 st.subheader("Revenue by Market Segment")
 segment_revenue = non_canceled.groupby('market_segment')['revenue'].sum().sort_values(ascending=False) / 1_000_000
 segment_revenue = segment_revenue.round(2).reset_index()
-fig4 = px.bar(segment_revenue, x='market_segment', y='revenue', text='revenue', title='Revenue by Market Segment (in Millions)', labels={'revenue': 'Revenue (M)', 'market_segment': 'Market Segment'})
-fig4.update_traces(texttemplate='%{text:.2f}M', textposition='outside')
-fig4.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig4)
+fig5 = px.bar(segment_revenue, x='market_segment', y='revenue', text='revenue', title='Revenue by Market Segment (in Millions)', labels={'revenue': 'Revenue (M)', 'market_segment': 'Market Segment'})
+fig5.update_traces(texttemplate='%{text:.2f}M', textposition='outside')
+fig5.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig5)
 
 # Top Countries by Revenue
 st.subheader("Top 10 Countries by Revenue")
 country_revenue = non_canceled.groupby('country')['revenue'].sum().sort_values(ascending=False).head(10) / 1_000_000
 country_revenue = country_revenue.round(2).reset_index()
-fig5 = px.bar(country_revenue, x='country', y='revenue', text='revenue', title='Top 10 Countries by Revenue (in Millions)', labels={'revenue': 'Revenue (M)', 'country': 'Country'})
-fig5.update_traces(texttemplate='%{text:.2f}M', textposition='outside')
-fig5.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig5)
+fig6 = px.bar(country_revenue, x='country', y='revenue', text='revenue', title='Top 10 Countries by Revenue (in Millions)', labels={'revenue': 'Revenue (M)', 'country': 'Country'})
+fig6.update_traces(texttemplate='%{text:.2f}M', textposition='outside')
+fig6.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig6)
 
 # Monthly Revenue Trend
 st.subheader("Monthly Revenue Trend")
 monthly_revenue = non_canceled.groupby('month')['revenue'].sum().reindex(month_order) / 1_000_000
 monthly_revenue = monthly_revenue.round(2).reset_index()
-fig6 = px.line(monthly_revenue, x='month', y='revenue', text='revenue', title='Monthly Revenue Trend (in Millions)', labels={'revenue': 'Revenue (M)', 'month': 'Month'})
-fig6.update_traces(texttemplate='%{text:.2f}M', textposition='top center')
-fig6.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-st.plotly_chart(fig6)
+fig7 = px.line(monthly_revenue, x='month', y='revenue', text='revenue', title='Monthly Revenue Trend (in Millions)', labels={'revenue': 'Revenue (M)', 'month': 'Month'})
+fig7.update_traces(texttemplate='%{text:.2f}M', textposition='top center')
+fig7.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+st.plotly_chart(fig7)
 
 # Cancellations by Weekday
 st.subheader("Cancellations by Weekday")
@@ -149,19 +149,13 @@ df['weekday'] = df['arrival_date'].dt.day_name()
 cancel_by_weekday = df[df['is_canceled'] == 1].groupby('weekday').size()
 weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 cancel_by_weekday = cancel_by_weekday.reindex(weekday_order[::-1])
-weekday_data = cancel_by_weekday.reset_index()
-weekday_data.columns = ['Weekday', 'Cancellations']
-fig7 = px.bar(
-    weekday_data,
-    x='Cancellations',
-    y='Weekday',
-    orientation='h',
-    text='Cancellations',
-    title='Cancellations by Weekday',
-    labels={'Weekday': 'Week Name', 'Cancellations': 'Bookings Count'},
-)
-fig7.update_traces(textposition='outside')
-fig7.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', yaxis=dict(categoryorder='array', categoryarray=weekday_data['Weekday'][::-1]))
-st.plotly_chart(fig7)
+fig8, ax = plt.subplots()
+cancel_by_weekday.plot(kind='barh', color='#d9534f', ax=ax)
+for i, v in enumerate(cancel_by_weekday):
+    ax.text(v + 5, i, str(v), va='center')
+plt.title('Cancellations by Weekday')
+plt.xlabel('Bookings Count')
+plt.ylabel('Week Name')
+st.pyplot(fig8)
 
-st.success("\u2705 Dashboard loaded successfully.")
+st.success("✅ Dashboard loaded successfully.")
