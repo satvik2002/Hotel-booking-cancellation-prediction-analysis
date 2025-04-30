@@ -25,23 +25,47 @@ st.markdown("This dashboard provides insights into hotel booking trends and perf
 
 # KPIs
 st.header("📊 Key Performance Indicators")
-col1, col2, col3 = st.columns(3)
 
+# KPI Set 1
+col1, col2, col3 = st.columns(3)
 with col1:
     st.metric("Total Bookings", df.shape[0])
+with col2:
     st.metric("Total Cancellations", df[df['is_canceled'] == 1].shape[0])
+with col3:
     st.metric("Cancellation Rate (%)", f"{round((df['is_canceled'].sum()/df.shape[0])*100, 2)}%")
 
-with col2:
+# KPI Set 2
+col4, col5, col6 = st.columns(3)
+with col4:
     st.metric("Avg. Lead Time", round(non_canceled['lead_time'].mean(), 2))
+with col5:
     st.metric("Avg. Stay Duration", round(non_canceled['stay_duration'].mean(), 2))
+with col6:
     st.metric("Avg. ADR", round(non_canceled['adr'].mean(), 2))
 
-with col3:
-    total_guests = (non_canceled['adults'] + non_canceled['children'] + non_canceled['babies']).sum()
+# KPI Set 3
+total_guests = (non_canceled['adults'] + non_canceled['children'] + non_canceled['babies']).sum()
+col7, col8, col9 = st.columns(3)
+with col7:
     st.metric("Total Guests", int(total_guests))
+with col8:
     st.metric("Repeat Guest Rate (%)", f"{round((non_canceled['is_repeated_guest'].sum()/len(non_canceled))*100, 2)}%")
+with col9:
     st.metric("Revenue", f"${round(non_canceled['revenue'].sum(), 2):,}")
+
+# KPI Set 4
+booking_change_rate = 100.0 * (non_canceled['booking_changes'] > 0).sum() / len(non_canceled)
+mismatch_room_rate = 100.0 * (non_canceled['reserved_room_type'] != non_canceled['assigned_room_type']).sum() / len(non_canceled)
+avg_waiting_days = round(non_canceled['days_in_waiting_list'].mean(), 2)
+
+col10, col11, col12 = st.columns(3)
+with col10:
+    st.metric("Booking Change Rate (%)", f"{round(booking_change_rate, 2)}%")
+with col11:
+    st.metric("Room Type Mismatch Rate (%)", f"{round(mismatch_room_rate, 2)}%")
+with col12:
+    st.metric("Avg. Waiting Days", avg_waiting_days)
 
 # Visualizations
 st.header("📈 Visual Analysis")
@@ -94,4 +118,3 @@ monthly_revenue = non_canceled.groupby('month')['revenue'].sum().reindex(month_o
 st.line_chart(monthly_revenue)
 
 st.success("✅ Dashboard loaded successfully.")
-
