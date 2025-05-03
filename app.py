@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Authentication
 users = {"admin": "admin123", "user": "pass"}
@@ -20,7 +22,6 @@ def login():
 
 # Load Data
 @st.cache_data
-
 def load_data():
     df = pd.read_csv("HotelData - Final.csv")
     df.fillna(0, inplace=True)
@@ -39,7 +40,7 @@ def main():
 
     # Page Navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["KPIs", "Cancellation Analysis", "Behavior Analysis", "Revenue Analysis"])
+    page = st.sidebar.radio("Go to", ["KPIs", "Cancellation Analysis", "Behavior Analysis", "Revenue Analysis", "Correlation Heatmap"])
     
     # Sidebar Filters
     st.sidebar.header("🔍 Filters")
@@ -52,7 +53,6 @@ def main():
     df = df[df['customer_type'].isin(selected_customer_types)]
     df = df[df['market_segment'].isin(selected_segments)]
     non_canceled = df[df['is_canceled'] == 0]
-
 
     if page == "KPIs":
         st.title("Hotel Booking Analysis Dashboard")
@@ -83,18 +83,13 @@ def main():
         st.header("📉 Cancellation Analysis")
         st.subheader("Bookings & Cancellations by Hotel")
         
-        # Data preparation
         hotel_data = df.groupby('hotel')['is_canceled'].value_counts().unstack().fillna(0)
         hotel_data.columns = ['Confirmed', 'Canceled']
         hotel_data = hotel_data[['Canceled', 'Confirmed']].reset_index()
         
-        # Melt for plotting
         hotel_data_melted = hotel_data.melt(id_vars='hotel', var_name='Status', value_name='Count')
-        
-        # Add formatted label with 'k'
         hotel_data_melted['Label'] = (hotel_data_melted['Count'] / 1000).round(1).astype(str) + 'k'
         
-        # Plotly bar chart
         fig0 = px.bar(
             hotel_data_melted,
             x='hotel',
@@ -177,13 +172,19 @@ def main():
         fig6.update_traces(textposition='top center')
         st.plotly_chart(fig6)
 
-    # Logout Button
+    elif page == "Correlation Heatmap":
+        st.header("📈 Correlation Heatmap")
+        numeric_cols = df.select_dtypes(include=np.number)
+        corr = numeric_cols.corr()
+        fig, ax = plt.subplots(figsize=(12, 10))
+        sns.heatmap(corr, annot=True, fmt=".2f", cmap='coolwarm', ax=ax, linewidths=0.5)
+        st.pyplot(fig)
+
     if st.sidebar.button("🚪 Logout"):
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.experimental_rerun()
 
-# Run App
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
