@@ -173,53 +173,53 @@ def main():
         st.plotly_chart(fig6)
 
     elif page == "Correlation Heatmap":
-    st.header("📈 Correlation Heatmap")
-
-    # Define encoding maps
-    hotel_map = {'Resort Hotel': 0, 'City Hotel': 1}
-    deposit_type_map = {'No Deposit': 0, 'Refundable': 1, 'Non Refund': 2}
-    customer_type_map = {'Transient': 0, 'Contract': 1, 'Transient-Party': 2, 'Group': 3}
-    market_segment_map = {'Online TA': 0, 'Offline TA/TO': 1, 'Direct': 2, 'Corporate': 3, 'Complementary': 4, 
-                          'Groups': 5, 'Aviation': 6, 'Undefined': 7}
-    distribution_channel_map = {'TA/TO': 0, 'Direct': 1, 'Corporate': 2, 'GDS': 3, 'Undefined': 4}
-    room_type_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'L': 9, 'P': 10}
-    month_map = {'January':1, 'February':2, 'March':3, 'April':4, 'May':5, 'June':6,
-                 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
-
-    # Create a copy for encoding
-    df_encoded = df.copy()
-
-    # Apply mappings
-    df_encoded['hotel'] = df_encoded['hotel'].map(hotel_map)
-    df_encoded['market_segment'] = df_encoded['market_segment'].map(market_segment_map)
-    df_encoded['distribution_channel'] = df_encoded['distribution_channel'].map(distribution_channel_map)
-    df_encoded['reserved_room_type'] = df_encoded['reserved_room_type'].map(room_type_map)
-    df_encoded['deposit_type'] = df_encoded['deposit_type'].map(deposit_type_map)
-    df_encoded['customer_type'] = df_encoded['customer_type'].map(customer_type_map)
-
-    # Convert date fields
-    df_encoded['year'] = pd.to_numeric(df_encoded['arrival_date'].dt.year, errors='coerce')
-    df_encoded['month'] = df_encoded['arrival_date'].dt.month
-    df_encoded['day'] = pd.to_numeric(df_encoded['arrival_date'].dt.day, errors='coerce')
-
-    # Keep only expected columns
-    expected_columns = ["hotel", "market_segment", "distribution_channel", "reserved_room_type",
-                        "deposit_type", "customer_type", "year", "month", "day", "lead_time",
-                        "arrival_date_week_number", "stays_in_weekend_nights", "stays_in_week_nights",
-                        "previous_cancellations", "adr", "required_car_parking_spaces"]
-
-    df_encoded = df_encoded[expected_columns]
-
-    # Ensure all columns are numeric
-    df_encoded = df_encoded.apply(pd.to_numeric, errors='coerce')
-
-    # Compute correlation
-    corr_matrix = df_encoded.corr()
-
-    # Plot heatmap
-    fig, ax = plt.subplots(figsize=(12, 10))
-    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', ax=ax, linewidths=0.5)
-    st.pyplot(fig)
+        st.header("📈 Correlation Heatmap")
+    
+        # Define encoding maps
+        hotel_map = {'Resort Hotel': 0, 'City Hotel': 1}
+        deposit_type_map = {'No Deposit': 0, 'Refundable': 1, 'Non Refund': 2}
+        customer_type_map = {'Transient': 0, 'Contract': 1, 'Transient-Party': 2, 'Group': 3}
+        market_segment_map = {'Online TA': 0, 'Offline TA/TO': 1, 'Direct': 2, 'Corporate': 3, 'Complementary': 4, 
+                              'Groups': 5, 'Aviation': 6, 'Undefined': 7}
+        distribution_channel_map = {'TA/TO': 0, 'Direct': 1, 'Corporate': 2, 'GDS': 3, 'Undefined': 4}
+        room_type_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'L': 9, 'P': 10}
+        month_map = {'January':1, 'February':2, 'March':3, 'April':4, 'May':5, 'June':6,
+                     'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
+    
+        # Create a copy for encoding
+        df_encoded = df.copy()
+    
+        # Apply mappings
+        df_encoded['hotel'] = df_encoded['hotel'].map(hotel_map)
+        df_encoded['market_segment'] = df_encoded['market_segment'].map(market_segment_map)
+        df_encoded['distribution_channel'] = df_encoded['distribution_channel'].map(distribution_channel_map)
+        df_encoded['reserved_room_type'] = df_encoded['reserved_room_type'].map(room_type_map)
+        df_encoded['deposit_type'] = df_encoded['deposit_type'].map(deposit_type_map)
+        df_encoded['customer_type'] = df_encoded['customer_type'].map(customer_type_map)
+    
+        # Convert date fields
+        df_encoded['year'] = pd.to_numeric(df_encoded['arrival_date'].dt.year, errors='coerce')
+        df_encoded['month'] = df_encoded['arrival_date'].dt.month
+        df_encoded['day'] = pd.to_numeric(df_encoded['arrival_date'].dt.day, errors='coerce')
+    
+        # Keep only expected columns
+        expected_columns = ["hotel", "market_segment", "distribution_channel", "reserved_room_type",
+                            "deposit_type", "customer_type", "year", "month", "day", "lead_time",
+                            "arrival_date_week_number", "stays_in_weekend_nights", "stays_in_week_nights",
+                            "previous_cancellations", "adr", "required_car_parking_spaces"]
+    
+        df_encoded = df_encoded[expected_columns]
+    
+        # Ensure all columns are numeric
+        df_encoded = df_encoded.apply(pd.to_numeric, errors='coerce')
+    
+        # Compute correlation
+        corr_matrix = df_encoded.corr()
+    
+        # Plot heatmap
+        fig, ax = plt.subplots(figsize=(12, 10))
+        sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', ax=ax, linewidths=0.5)
+        st.pyplot(fig)
 
 
     if st.sidebar.button("🚪 Logout"):
